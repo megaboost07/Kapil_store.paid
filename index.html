@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kapil H4X - Sketchhub Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #4b69ff; --bg: #fdfdfd; --glass: rgba(255, 255, 255, 0.85); --shadow: 0 8px 32px rgba(0,0,0,0.1); }
+        * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: #333; padding-bottom: 110px; overflow-x: hidden; }
+
+        /* HEADER & SEARCH */
+        header { background: #fff; padding: 15px; border-bottom: 1px solid #eee; position: sticky; top:0; z-index: 1000; }
+        .search-box { background: #f1f3f4; border-radius: 25px; display: flex; align-items: center; padding: 8px 15px; margin-top: 10px; }
+        .search-box input { border: none; background: transparent; width: 100%; margin-left: 10px; outline: none; font-size: 14px; }
+
+        /* HOME SECTIONS */
+        .section { margin-top: 20px; padding: 0 15px; }
+        .sec-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .sec-header h2 { font-size: 18px; font-weight: 700; color: #111; }
+        .see-more { color: #fff; background: var(--primary); padding: 5px 15px; border-radius: 15px; font-size: 12px; font-weight: 600; text-decoration: none; }
+
+        /* APP GRID (PHOTO Jaisa) */
+        .app-grid { display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; }
+        .app-card { min-width: 110px; text-align: center; cursor: pointer; }
+        .app-card img { width: 100px; height: 100px; border-radius: 24px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; }
+        .app-card:active img { transform: scale(0.9); }
+        .app-name { font-size: 13px; margin-top: 8px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-meta { font-size: 11px; color: #888; display: flex; justify-content: center; gap: 8px; margin-top: 3px; }
+
+        /* LIGHTING GLASS BOTTOM NAV */
+        .glass-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 92%; background: var(--glass); backdrop-filter: blur(15px); border-radius: 30px; display: flex; justify-content: space-around; padding: 12px; border: 1px solid rgba(255,255,255,0.4); box-shadow: var(--shadow); z-index: 2000; }
+        .nav-item { text-align: center; color: #777; font-size: 11px; cursor: pointer; text-decoration: none; position: relative; transition: 0.3s; }
+        .nav-item i { display: block; font-size: 20px; margin-bottom: 4px; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active i { transform: translateY(-3px); text-shadow: 0 0 15px var(--primary); }
+        .nav-item.active::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); }
+
+        /* DETAIL PAGE UI (AS PER PHOTO) */
+        .full-page { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 3000; overflow-y: auto; padding: 20px; }
+        .det-header { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
+        .det-icon { width: 85px; height: 85px; border-radius: 20px; border: 1px solid #eee; }
+        .dl-btn { display: block; background: var(--primary); color: #fff; text-align: center; padding: 12px; border-radius: 10px; font-weight: bold; text-decoration: none; margin: 15px 0; }
+        .ss-slider { display: flex; gap: 12px; overflow-x: auto; margin: 20px 0; scrollbar-width: none; }
+        .ss-slider img { height: 220px; border-radius: 12px; border: 1px solid #eee; }
+        .comment-box { background: #f8f9fa; padding: 15px; border-radius: 15px; margin-top: 20px; }
+        
+        /* ADMIN UI */
+        .admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 4000; align-items: center; justify-content: center; }
+        .box { background: #fff; padding: 25px; border-radius: 25px; width: 90%; max-width: 400px; max-height: 85vh; overflow-y: auto; position: relative; }
+        input, textarea, select { width: 100%; padding: 12px; margin: 8px 0; background: #f5f5f5; border: 1px solid #eee; border-radius: 12px; outline: none; }
+        .save-btn { width: 100%; padding: 12px; background: #000; color: #fff; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
+        .close-admin { position: absolute; top: 15px; right: 15px; cursor: pointer; font-size: 20px; color: #888; }
+    </style>
+</head>
+<body onload="renderHome()">
+
+<header>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="font-size: 22px;">Sketchub</h1>
+        <i class="fa-regular fa-user-circle" style="font-size: 24px;"></i>
+    </div>
+    <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color:#888;"></i>
+        <input type="text" id="searchInput" placeholder="Search projects..." oninput="searchApp()">
+    </div>
+</header>
+
+<div id="home-content">
+    <div class="section">
+        <div class="sec-header"><h2>New & Updated</h2><a href="#" class="see-more">See More</a></div>
+        <div id="new-grid" class="app-grid"></div>
+    </div>
+    <div class="section">
+        <div class="sec-header"><h2>Editor's choice</h2><a href="#" class="see-more">See More</a></div>
+        <div id="editor-grid" class="app-grid"></div>
+    </div>
+    <div class="section">
+        <div class="sec-header"><h2>Trending</h2><a href="#" class="see-more">See More</a></div>
+        <div id="trending-grid" class="app-grid"></div>
+    </div>
+</div>
+
+<div id="detail-page" class="full-page">
+    <div onclick="closeDetail()"><i class="fa-solid fa-arrow-left" style="font-size: 22px; cursor: pointer;"></i></div>
+    <div id="detail-body"></div>
+</div>
+
+<div id="login-pop" class="admin-modal">
+    <div class="box">
+        <i class="fa-solid fa-xmark close-admin" onclick="closeAdmin()"></i>
+        <h3>Admin Password</h3>
+        <input type="password" id="adminPass" placeholder="BOSS">
+        <button class="save-btn" onclick="checkAdmin()">Enter Dashboard</button>
+    </div>
+</div>
+
+<div id="admin-panel" class="admin-modal">
+    <div class="box">
+        <i class="fa-solid fa-xmark close-admin" onclick="closeAdmin()"></i>
+        <h3 style="color:var(--primary)">Post Unique Item</h3>
+        <button onclick="toggleDelete()" style="background:red; color:#fff; border:none; padding:8px; width:100%; border-radius:10px; margin:10px 0;">ON/OFF Delete Mode</button>
+        
+        <select id="aCat">
+            <option>New & Updated</option>
+            <option>Editor's choice</option>
+            <option>Trending</option>
+        </select>
+        <input id="aIcon" placeholder="Icon Link">
+        <input id="aName" placeholder="Project Name">
+        <input id="aPrice" placeholder="Price (₹)">
+        <input id="aLink" placeholder="Download / Buy Link">
+        <textarea id="aAbout" placeholder="About this project (Description)"></textarea>
+        
+        <p style="font-size:12px; margin-top:10px;">Screenshots (Max 5)</p>
+        <input id="s1" placeholder="SS Link 1"><input id="s2" placeholder="SS Link 2">
+        <input id="s3" placeholder="SS Link 3"><input id="s4" placeholder="SS Link 4">
+        <input id="s5" placeholder="SS Link 5">
+        
+        <button class="save-btn" onclick="saveItem()">Upload Project</button>
+    </div>
+</div>
+
+<nav class="glass-nav">
+    <div class="nav-item active" onclick="location.reload()"><i class="fa-solid fa-house"></i>Home</div>
+    <div class="nav-item" onclick="openAdmin()"><i class="fa-solid fa-upload"></i>Upload</div>
+    <div class="nav-item" onclick="window.open('https://t.me/+y4__XGNTO4w0ZmE1')"><i class="fa-brands fa-telegram"></i>Telegram</div>
+</nav>
+
+<script>
+    let deleteMode = false;
+    let currentId = null;
+
+    // Fix Back Button
+    window.onpopstate = () => { closeDetail(); closeAdmin(); };
+
+    function openAdmin() { document.getElementById('login-pop').style.display = 'flex'; }
+    function closeAdmin() { document.querySelectorAll('.admin-modal').forEach(m => m.style.display = 'none'); }
+
+    function checkAdmin() {
+        if(document.getElementById('adminPass').value === "BOSS") {
+            closeAdmin();
+            document.getElementById('admin-panel').style.display = 'flex';
+            history.pushState({p:1}, '');
+        } else { alert("Access Denied!"); }
+    }
+
+    function saveItem() {
+        const screens = [
+            document.getElementById('s1').value, document.getElementById('s2').value,
+            document.getElementById('s3').value, document.getElementById('s4').value,
+            document.getElementById('s5').value
+        ].filter(s => s !== "");
+
+        const item = {
+            id: Date.now(),
+            cat: document.getElementById('aCat').value,
+            icon: document.getElementById('aIcon').value,
+            name: document.getElementById('aName').value,
+            price: document.getElementById('aPrice').value,
+            link: document.getElementById('aLink').value,
+            about: document.getElementById('aAbout').value,
+            ss: screens,
+            comments: []
+        };
+
+        let data = JSON.parse(localStorage.getItem('sketch_db')) || [];
+        data.push(item);
+        localStorage.setItem('sketch_db', JSON.stringify(data));
+        renderHome();
+        closeAdmin();
+    }
+
+    function renderHome() {
+        const grids = {
+            "New & Updated": document.getElementById('new-grid'),
+            "Editor's choice": document.getElementById('editor-grid'),
+            "Trending": document.getElementById('trending-grid')
+        };
+        Object.values(grids).forEach(g => g.innerHTML = "");
+
+        const data = JSON.parse(localStorage.getItem('sketch_db')) || [];
+        data.forEach(p => {
+            if(grids[p.cat]) {
+                grids[p.cat].innerHTML += `
+                    <div class="app-card" onclick="openDetail(${p.id})">
+                        <div style="position:relative">
+                            <button onclick="event.stopPropagation(); remove(${p.id})" style="display:${deleteMode?'block':'none'}; position:absolute; right:0; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px;">X</button>
+                            <img src="${p.icon}">
+                        </div>
+                        <div class="app-name">${p.name}</div>
+                        <div class="app-meta"><i class="fa-regular fa-heart"></i> 12 <i class="fa-regular fa-comment"></i> ${p.comments.length}</div>
+                    </div>`;
+            }
+        });
+    }
+
+    function openDetail(id) {
+        currentId = id;
+        const p = JSON.parse(localStorage.getItem('sketch_db')).find(x => x.id === id);
+        const ssHtml = p.ss.map(s => `<img src="${s}">`).join('');
+        const comms = (p.comments || []).map(c => `<div style="padding:10px; border-bottom:1px solid #eee; font-size:13px;"><b>${c.user}</b>: ${c.text}</div>`).join('');
+
+        document.getElementById('detail-body').innerHTML = `
+            <div class="det-header">
+                <img src="${p.icon}" class="det-icon">
+                <div>
+                    <h2 style="font-size:22px;">${p.name}</h2>
+                    <p style="color:#888; font-size:14px;">₹${p.price}</p>
+                </div>
+            </div>
+            <a href="${p.link}" class="dl-btn">Download Project</a>
+            <div style="display:flex; justify-content:space-around; border-top:1px solid #eee; border-bottom:1px solid #eee; padding:15px 0;">
+                <div style="text-align:center;"><i class="fa-regular fa-heart"></i><p style="font-size:11px;">Likes</p></div>
+                <div style="text-align:center;"><i class="fa-regular fa-comment"></i><p style="font-size:11px;">Comments</p></div>
+                <div style="text-align:center;"><i class="fa-solid fa-download"></i><p style="font-size:11px;">1k+</p></div>
+            </div>
+            <div class="ss-slider">${ssHtml}</div>
+            <div style="margin-top:20px;">
+                <h3 style="font-size:16px;">About</h3>
+                <p style="color:#666; font-size:14px; margin-top:10px; line-height:1.6;">${p.about || 'No description.'}</p>
+            </div>
+            <div class="comment-box">
+                <h3 style="font-size:15px; margin-bottom:10px;">Comments (${p.comments.length})</h3>
+                <input id="userName" placeholder="Your Name" style="width:40%; margin-right:5%">
+                <input id="userComm" placeholder="Add a comment..." style="width:50%">
+                <button onclick="addComment()" style="background:var(--primary); color:#fff; border:none; padding:8px 15px; border-radius:10px; margin-top:10px; cursor:pointer;">Post Comment</button>
+                <div id="comment-list" style="margin-top:15px;">${comms}</div>
+            </div>`;
+        document.getElementById('detail-page').style.display = 'block';
+        history.pushState({p:2}, '');
+    }
+
+    function addComment() {
+        const u = document.getElementById('userName').value;
+        const t = document.getElementById('userComm').value;
+        if(!u || !t) return;
+
+        let data = JSON.parse(localStorage.getItem('sketch_db'));
+        let p = data.find(x => x.id === currentId);
+        p.comments.push({user: u, text: t});
+        localStorage.setItem('sketch_db', JSON.stringify(data));
+        openDetail(currentId);
+    }
+
+    function searchApp() {
+        let val = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.app-card').forEach(card => {
+            let name = card.querySelector('.app-name').innerText.toLowerCase();
+            card.style.display = name.includes(val) ? "block" : "none";
+        });
+    }
+
+    function toggleDelete() { deleteMode = !deleteMode; renderHome(); }
+    function remove(id) {
+        let data = JSON.parse(localStorage.getItem('sketch_db')).filter(x => x.id !== id);
+        localStorage.setItem('sketch_db', JSON.stringify(data));
+        renderHome();
+    }
+    function closeDetail() { document.getElementById('detail-page').style.display = 'none'; }
+</script>
+</body>
+</html>
